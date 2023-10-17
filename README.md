@@ -1,5 +1,252 @@
 # Jarkom-Modul-2-B22-2023
 
+# 1.
+
+`Yudhistira akan digunakan sebagai DNS Master, Werkudara sebagai DNS Slave, Arjuna merupakan Load Balancer yang terdiri dari beberapa Web Server yaitu Prabakusuma, Abimanyu, dan Wisanggeni. Buatlah topologi dengan pembagian sebagai berikut. Folder topologi dapat diakses pada drive berikut `
+
+![1](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/3110abb5-20c0-4f65-b36b-65d38c3db9b6)
+
+Configure router:
+```
+# DHCP config for eth0
+auto eth0
+iface eth0 inet dhcp
+hostname ubuntu-1-1
+
+# Static config for eth1
+auto eth1
+iface eth1 inet static
+	address 192.189.1.1
+	netmask 255.255.255.0
+
+# Static config for eth2
+auto eth2
+iface eth2 inet static
+	address 192.189.2.1
+	netmask 255.255.255.0
+```
+
+Configure NakulaClient:
+```
+# Static config for eth0
+auto eth0
+    iface eth0 inet static
+        address 192.189.1.2
+        netmask 255.255.255.0
+        gateway 192.189.1.1
+```
+
+Configure SadewaCLient:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.1.3
+        netmask 255.255.255.0
+        gateway 192.189.1.1
+```
+
+Configure AbimanyuWebServer:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.1.4
+        netmask 255.255.255.0
+        gateway 192.189.1.1
+```
+
+Configure PrabukusumaWebServer:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.1.5
+        netmask 255.255.255.0
+        gateway 192.189.1.1
+```
+
+Configure WisanggeniWebServer:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.1.6
+        netmask 255.255.255.0
+        gateway 192.189.1.1
+```
+
+Configure YudhistiraDNSMaster:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.2.2
+        netmask 255.255.255.0
+        gateway 192.189.2.1
+```
+
+Configure WerkudaraDNSSlave:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.2.3
+        netmask 255.255.255.0
+        gateway 192.189.2.1
+```
+
+Configure ArjunaLoadBalancer:
+```
+auto eth0
+    iface eth0 inet static
+        address 192.189.2.4
+        netmask 255.255.255.0
+        gateway 192.189.2.1
+```
+
+
+# 2.
+
+`Buatlah website utama pada node arjuna dengan akses ke arjuna.yyy.com dengan alias www.arjuna.yyy.com dengan yyy merupakan kode kelompok.`
+
+Tambahkan script berikut pada node YudhistiraDNSMaster, pada file `/etc/bind/named.conf.local`
+```sh
+zone "arjuna.b22.com" {
+        type master;
+        file "/etc/bind/arjuna/arjuna.b22.com";
+};
+```
+Dan tambahkan script berikut pada file `/etc/bind/arjuna/arjuna.b22.com`
+```sh
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     arjuna.b22.com. root.arjuna.b22.com. (
+                            2023101101         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      arjuna.b22.com.
+@       IN      A       192.189.2.4     ; IP Arjuna
+www     IN      CNAME   arjuna.b22.com.
+@       IN      AAAA    ::1
+```
+
+![2](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/f6fc8677-d22e-4cc8-bd04-447243344ef7)
+
+# 3.
+
+`Dengan cara yang sama seperti soal nomor 2, buatlah website utama dengan akses ke abimanyu.yyy.com dan alias www.abimanyu.yyy.com.`
+
+Tambahkan script berikut pada node YudhistiraDNSMaster, pada file `/etc/bind/named.conf.local`
+```sh
+zone "abimanyu.b22.com" {
+       type master;
+        file "/etc/bind/abimanyu/abimanyu.b22.com";
+};
+```
+Dan tambahkan script berikut pada file `/etc/bind/abimanyu/abimanyu.b22.com`
+```sh
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.b22.com. root.abimanyu.b22.com. (
+                     2023101101         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      abimanyu.b22.com.
+@       IN      A       192.189.1.4     ; IP Abimanyu
+www     IN      CNAME   abimanyu.b22.com.
+@       IN      AAAA    ::1
+```
+
+![3](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/32478e23-bde9-4741-af08-3b3013bd2a55)
+
+
+# 4.
+
+`Kemudian, karena terdapat beberapa web yang harus di-deploy, buatlah subdomain parikesit.abimanyu.yyy.com yang diatur DNS-nya di Yudhistira dan mengarah ke Abimanyu.`
+
+Tambahkan script berikut pada node YudhistiraDNSMaster, pada file `/etc/bind/abimanyu/abimanyu.b22.com`
+```sh
+parikesit       IN      A       192.189.1.4     ; IP abimanyu
+www.parikesit   IN      CNAME   abimanyu.b22.com.
+```
+
+![4](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/034d2c1c-0c8b-4bf0-8a7e-6f7a8960a97d)
+
+# 5.
+
+`Buat juga reverse domain untuk domain utama. (Abimanyu saja yang direverse)`
+
+Tambahkan script berikut pada node YudhistiraDNSMaster, pada file `/etc/bind/named.conf.local`
+```sh
+zone "1.189.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/abimanyu/1.189.192.in-addr.arpa";
+};
+```
+Dan tambahkan script berikut pada file `/etc/bind/abimanyu/1.189.192.in-addr.arpa`
+```sh
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     abimanyu.b22.com. root.abimanyu.b22.com. (
+                            2023101101         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+1.189.192.in-addr.arpa.          IN      NS      abimanyu.b22.com.
+4                                IN      PTR      abimanyu.b22.com. ; Byte ke-4 IP abimanyu
+```
+
+![5](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/1e9337fd-6ea8-4a31-a4c3-abcfa6c9000f)
+
+
+# 6.
+
+`Agar dapat tetap dihubungi ketika DNS Server Yudhistira bermasalah, buat juga Werkudara sebagai DNS Slave untuk domain utama.`
+
+Edit script menjadi seperti berikut pada node YudhistiraDNSMaster, pada file `/etc/bind/named.conf.local`
+```sh
+zone "arjuna.b22.com" {
+        type master;
+        notify yes;
+        also-notify { 192.189.2.3; };
+        allow-transfer { 192.189.2.3; };
+        file "/etc/bind/arjuna/arjuna.b22.com";
+};
+zone "abimanyu.b22.com" {
+        type master;
+        notify yes;
+        also-notify { 192.189.2.3; };
+        allow-transfer { 192.189.2.3; };
+        file "/etc/bind/arjuna/abimanyu.b22.com";
+};
+```
+Dan pada node WerkudaraDNSSlave, pada file `/etc/bind/named.conf.local`
+```sh
+zone "arjuna.b22.com" {
+        type slave;
+        masters { 192.189.2.2; };
+        file "/var/lib/bind/arjuna.b22.com";
+};
+zone "abimanyu.b22.com" {
+        type slave;
+        masters { 192.189.2.2; };
+        file "/var/lib/bind/abimanyu.b22.com";
+};
+```
+
+![6 1](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/2d88582c-1dba-44fd-9b7f-18ccd40f4ad0)
+<br>
+![6 2](https://github.com/Clement-155/Jarkom-Modul-2-B22-2023/assets/99221296/9d80ba4f-57ac-4055-900f-005dee03720b)
+
 # 7.
 
 `Seperti yang kita tahu karena banyak sekali informasi yang harus diterima, buatlah subdomain khusus untuk perang yaitu baratayuda.abimanyu.yyy.com dengan alias www.baratayuda.abimanyu.yyy.com yang didelegasikan dari Yudhistira ke Werkudara dengan IP menuju ke Abimanyu dalam folder Baratayuda.`
@@ -303,6 +550,39 @@ Penjelasan :
 3. R = Redirect + L = if the rule matches, no further rules will be processed
 
 ![""](./Foto/12.JPG "")
+
+# 13.
+
+`Selain itu, pada subdomain www.parikesit.abimanyu.yyy.com, DocumentRoot disimpan pada /var/www/parikesit.abimanyu.yyy`
+
+# 14.
+
+`Pada subdomain tersebut folder /public hanya dapat melakukan directory listing sedangkan pada folder /secret tidak dapat diakses (403 Forbidden).`
+
+# 15.
+
+`Buatlah kustomisasi halaman error pada folder /error untuk mengganti error kode pada Apache. Error kode yang perlu diganti adalah 404 Not Found dan 403 Forbidden.`
+
+# 16.
+
+`Buatlah suatu konfigurasi virtual host agar file asset www.parikesit.abimanyu.yyy.com/public/js menjadi 
+www.parikesit.abimanyu.yyy.com/js`
+
+# 17.
+
+`Agar aman, buatlah konfigurasi agar www.rjp.baratayuda.abimanyu.yyy.com hanya dapat diakses melalui port 14000 dan 14400.`
+
+# 18.
+
+`Untuk mengaksesnya buatlah autentikasi username berupa “Wayang” dan password “baratayudayyy” dengan yyy merupakan kode kelompok. Letakkan DocumentRoot pada /var/www/rjp.baratayuda.abimanyu.yyy.`
+
+# 19.
+
+`Buatlah agar setiap kali mengakses IP dari Abimanyu akan secara otomatis dialihkan ke www.abimanyu.yyy.com (alias)`
+
+# 20.
+
+`Karena website www.parikesit.abimanyu.yyy.com semakin banyak pengunjung dan banyak gambar gambar random, maka ubahlah request gambar yang memiliki substring “abimanyu” akan diarahkan menuju abimanyu.png.`
 
 
 
